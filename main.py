@@ -3,81 +3,80 @@ import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-# 🔑 Render/GitHub Environment Token
+# 🔑 Environment Token (SAFE CHECK)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 
-# 💰 Binance Price
+# 💰 Price
 def get_price(symbol):
     url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}"
     try:
-        res = requests.get(url, timeout=10)
-        data = res.json()
-        return data["price"]
+        r = requests.get(url, timeout=10)
+        return r.json()["price"]
     except:
         return None
 
 
-# 📊 Simple Signal Logic
+# 📊 Signal
 def get_signal(symbol):
     url = f"https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}"
     try:
-        res = requests.get(url, timeout=10)
-        data = res.json()
+        r = requests.get(url, timeout=10)
+        data = r.json()
 
         change = float(data["priceChangePercent"])
 
         if change > 2:
-            return "🟢 BUY (Strong Uptrend)"
+            return "🟢 BUY"
         elif change < -2:
-            return "🔴 SELL (Downtrend)"
+            return "🔴 SELL"
         else:
-            return "🟡 HOLD (Sideways Market)"
+            return "🟡 HOLD"
     except:
-        return "❌ Error fetching signal"
+        return "❌ Error"
 
 
-# 🚀 /start
+# 🚀 START
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🤖 Bot Started Successfully!\n\n"
-        "Commands:\n"
+        "🤖 Bot Started!\n\n"
         "/price BTCUSDT\n"
         "/signal BTCUSDT"
     )
 
 
-# 💰 /price
+# 💰 PRICE
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if len(context.args) == 0:
+    if not context.args:
         await update.message.reply_text("Usage: /price BTCUSDT")
         return
 
     symbol = context.args[0].upper()
-    price = get_price(symbol)
+    result = get_price(symbol)
 
-    if price:
-        await update.message.reply_text(f"💰 {symbol} Price: {price}")
+    if result:
+        await update.message.reply_text(f"💰 {symbol}: {result}")
     else:
         await update.message.reply_text("❌ Invalid Symbol")
 
 
-# 📊 /signal
+# 📊 SIGNAL
 async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if len(context.args) == 0:
+    if not context.args:
         await update.message.reply_text("Usage: /signal BTCUSDT")
         return
 
     symbol = context.args[0].upper()
     result = get_signal(symbol)
 
-    await update.message.reply_text(f"📊 {symbol}\n{result}")
+    await update.message.reply_text(f"📊 {symbol}: {result}")
 
 
-# 🔥 Main Function
+# 🔥 MAIN (SAFE ENV CHECK ADDED)
 def main():
     if not BOT_TOKEN:
-        print("❌ BOT_TOKEN not found in environment variables")
+        print("❌ ERROR: BOT_TOKEN missing in Environment Variables (Render)")
+        print("👉 Go to Render → Environment → Add BOT_TOKEN")
         return
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
