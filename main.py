@@ -1,59 +1,23 @@
-from flask import Flask
-from threading import Thread
-import os
+import requests
 
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+def get_price(symbol):
+    try:
+        symbol = symbol.upper().strip()
+        symbol = symbol.replace("/PRICE", "").replace("/price", "").strip()
 
-from market import get_price
+        if "USDT" not in symbol:
+            symbol = symbol + "USDT"
 
-TOKEN = os.environ.get("TOKEN")
+        url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}"
+        response = requests.get(url, timeout=10)
+        data = response.json()
 
-web = Flask(__name__)
+        if "price" in data:
+            return float(data["price"])
+        else:
+            print("DEBUG ERROR:", data)
+            return None
 
-@web.route("/")
-def home():
-    return "Trading Bot is Running!"
-
-def run_web():
-    port = int(os.environ.get("PORT", 10000))
-    web.run(host="0.0.0.0", port=port)
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🤖 Trading Bot Working Successfully!\n\n"
-        "Commands:\n"
-        "/price BTCUSDT\n"
-        "/price ETHUSDT"
-    )
-
-async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if len(context.args) == 0:
-        await update.message.reply_text("Usage:\n/price BTCUSDT")
-        return
-
-    symbol = context.args[0].upper()
-
-    p = get_price(symbol)
-
-    if p is None:
-        await update.message.reply_text("❌ Invalid Coin Symbol")
-    else:
-        await update.message.reply_text(
-            f"💰 {symbol}\n\nCurrent Price: {p} USDT"
-        )
-
-def main():
-    app = Application.builder().token(TOKEN).build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("price", price))
-
-    print("Bot Started...")
-
-    Thread(target=run_web, daemon=True).start()
-
-    app.run_polling()
-
-if __name__ == "__main__":
-    main()
+    except Exception as e:
+        print("ERROR:", e)
+        return None
