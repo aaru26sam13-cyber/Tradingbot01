@@ -1,51 +1,44 @@
-import os
-import requests
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import time
+from telegram import Bot
 
-# ⚠️ Render मध्ये env variable आहे असं गृहित धरतो
-BOT_TOKEN = os.getenv("8793772063:AAHgvP6G_Rdy3bnCKnFmfhMsxdNB-ApqY6U")
+from config import TOKEN, CHAT_ID, SYMBOLS, TIMEFRAMES
+from market import get_crypto_price
+from strategy import ict_smc_signal
 
+bot = Bot(token=TOKEN)
 
-def get_price(symbol):
-    url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}"
-    try:
-        return requests.get(url, timeout=10).json()["price"]
-    except:
-        return None
+def send(msg):
+    bot.send_message(chat_id=CHAT_ID, text=msg)
 
+print("🚀 PRO BOT STARTED")
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Bot Ready 🤖")
+while True:
 
+    for symbol in SYMBOLS:
 
-async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not context.args:
-        await update.message.reply_text("/price BTCUSDT")
-        return
+        price = get_crypto_price(symbol)
+        if not price:
+            continue
 
-    symbol = context.args[0].upper()
-    p = get_price(symbol)
+        for tf in TIMEFRAMES:
 
-    if p:
-        await update.message.reply_text(f"{symbol}: {p}")
-    else:
-        await update.message.reply_text("Invalid Symbol")
+            signal, strength = ict_smc_signal(price, tf)
 
+            msg = f"""
+🤖 PRO ICT + SMC SIGNAL
 
-def main():
-    if not BOT_TOKEN:
-        print("BOT_TOKEN missing in Render Environment")
-        return
+💱 Asset: {symbol}
+💰 Price: {price}
 
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+⏱ Timeframe: {tf}
+📊 Signal: {signal}
+🎯 Strength: {strength}/100
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("price", price))
+🌍 Markets: Crypto + Forex + Gold
+"""
+            send(msg)
 
-    print("Bot Running...")
-    app.run_polling()
+            time.sleep(2)
 
-
-if __name__ == "__main__":
-    main()
+    # cycle delay (3 min system base)
+    time.sleep(180)
