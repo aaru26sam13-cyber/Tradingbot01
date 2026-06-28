@@ -1,27 +1,28 @@
+import os
 import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-# 🔑 तुमचा Bot Token इथे टाका
-BOT_TOKEN = "8793772063:AAHgvP6G_Rdy3bnCKnFmfhMsxdNB-ApqY6U"
+# 🔑 Render/GitHub Environment Token
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 
-# 💰 Price Function (Binance)
+# 💰 Binance Price
 def get_price(symbol):
     url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}"
     try:
-        res = requests.get(url)
+        res = requests.get(url, timeout=10)
         data = res.json()
         return data["price"]
     except:
         return None
 
 
-# 📊 Signal Function (Simple Strategy)
+# 📊 Simple Signal Logic
 def get_signal(symbol):
     url = f"https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}"
     try:
-        res = requests.get(url)
+        res = requests.get(url, timeout=10)
         data = res.json()
 
         change = float(data["priceChangePercent"])
@@ -36,7 +37,7 @@ def get_signal(symbol):
         return "❌ Error fetching signal"
 
 
-# 🚀 /start command
+# 🚀 /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🤖 Bot Started Successfully!\n\n"
@@ -46,7 +47,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-# 💰 /price command
+# 💰 /price
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(context.args) == 0:
         await update.message.reply_text("Usage: /price BTCUSDT")
@@ -61,7 +62,7 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Invalid Symbol")
 
 
-# 📊 /signal command
+# 📊 /signal
 async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(context.args) == 0:
         await update.message.reply_text("Usage: /signal BTCUSDT")
@@ -73,8 +74,12 @@ async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"📊 {symbol}\n{result}")
 
 
-# 🔥 Main
+# 🔥 Main Function
 def main():
+    if not BOT_TOKEN:
+        print("❌ BOT_TOKEN not found in environment variables")
+        return
+
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
