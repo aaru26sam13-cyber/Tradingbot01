@@ -5,10 +5,10 @@ import os
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-# तुझा Telegram Bot Token इथे टाक
-TOKEN = "8793772063:AAHgvP6G_Rdy3bnCKnFmfhMsxdNB-ApqY6U"
+from market import get_price
 
-# Flask App
+TOKEN = os.environ.get("TOKEN")
+
 web = Flask(__name__)
 
 @web.route("/")
@@ -19,21 +19,40 @@ def run_web():
     port = int(os.environ.get("PORT", 10000))
     web.run(host="0.0.0.0", port=port)
 
-# Telegram Commands
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🤖 Bot Working Successfully!")
+    await update.message.reply_text(
+        "🤖 Trading Bot Working Successfully!\n\n"
+        "Commands:\n"
+        "/price BTCUSDT\n"
+        "/price ETHUSDT"
+    )
+
+async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(context.args) == 0:
+        await update.message.reply_text("Usage:\n/price BTCUSDT")
+        return
+
+    symbol = context.args[0].upper()
+
+    p = get_price(symbol)
+
+    if p is None:
+        await update.message.reply_text("❌ Invalid Coin Symbol")
+    else:
+        await update.message.reply_text(
+            f"💰 {symbol}\n\nCurrent Price: {p} USDT"
+        )
 
 def main():
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("price", price))
 
     print("Bot Started...")
 
-    # Flask server background मध्ये चालू कर
-    Thread(target=run_web).start()
+    Thread(target=run_web, daemon=True).start()
 
-    # Telegram Bot चालू कर
     app.run_polling()
 
 if __name__ == "__main__":
