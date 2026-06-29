@@ -1,27 +1,30 @@
 from market import get_klines
 
-def generate_signal(symbol, timeframe="3m"):
+def ict_smc_signal(price, timeframe):
 
-    candles = get_klines(symbol, timeframe, 50)
-
-    if not candles or len(candles) < 20:
-        return None
-
-    closes = [float(c[4]) for c in candles]
-
-    last = closes[-1]
-    avg20 = sum(closes[-20:]) / 20
-
-    if last > avg20:
-        signal = "BUY 🟢"
-    elif last < avg20:
-        signal = "SELL 🔴"
+    if timeframe == "3m":
+        limit = 20
+    elif timeframe == "15m":
+        limit = 30
+    elif timeframe == "1h":
+        limit = 40
     else:
-        signal = "NO TRADE ⚪"
+        limit = 50
 
-    return {
-        "symbol": symbol,
-        "timeframe": timeframe,
-        "price": last,
-        "signal": signal,
-    }
+    strength = 60
+
+    if price <= 0:
+        return "NO TRADE ⚪", 0
+
+    if timeframe == "3m":
+        strength = 75
+    elif timeframe == "15m":
+        strength = 80
+    elif timeframe == "1h":
+        strength = 85
+    elif timeframe == "4h":
+        strength = 90
+
+    signal = "BUY 🟢"
+
+    return signal, strength
