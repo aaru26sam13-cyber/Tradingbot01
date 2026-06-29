@@ -2,8 +2,8 @@
 # TELEGRAM SETTINGS
 # ===========================
 
-TOKEN = "इथे_तुझा_BOT_TOKEN"
-CHAT_ID = "इथे_तुझा_CHAT_ID"
+TOKEN = "8793772063:AAHgvP6G_Rdy3bnCKnFmfhMsxdNB-ApqY6U"
+CHAT_ID = "7301534362"
 
 # ===========================
 # CRYPTO SYMBOLS
