@@ -1,44 +1,71 @@
 import time
 from telegram import Bot
 
-from config import TOKEN, CHAT_ID, SYMBOLS, TIMEFRAMES
+from config import TOKEN, CHAT_ID, CRYPTO_SYMBOLS, TIMEFRAMES, SCAN_INTERVAL
 from market import get_crypto_price
 from strategy import ict_smc_signal
 
 bot = Bot(token=TOKEN)
 
-def send(msg):
-    bot.send_message(chat_id=CHAT_ID, text=msg)
 
-print("🚀 PRO BOT STARTED")
+def send_signal(symbol, price, timeframe, signal, strength):
+
+    message = f"""
+🚨 TRADING SIGNAL
+
+💱 Coin : {symbol}
+
+💰 Price : {price}
+
+⏰ Timeframe : {timeframe}
+
+📊 Signal : {signal}
+
+🎯 Strength : {strength}%
+
+🤖 Crypto Trading Bot
+"""
+
+    bot.send_message(
+        chat_id=CHAT_ID,
+        text=message
+    )
+
+
+print("🚀 Trading Bot Started...")
 
 while True:
 
-    for symbol in SYMBOLS:
+    for symbol in CRYPTO_SYMBOLS:
 
-        price = get_crypto_price(symbol)
-        if not price:
-            continue
+        try:
 
-        for tf in TIMEFRAMES:
+            price = get_crypto_price(symbol)
 
-            signal, strength = ict_smc_signal(price, tf)
+            if price is None:
+                continue
 
-            msg = f"""
-🤖 PRO ICT + SMC SIGNAL
+            for timeframe in TIMEFRAMES:
 
-💱 Asset: {symbol}
-💰 Price: {price}
+                signal, strength = ict_smc_signal(
+                    price,
+                    timeframe
+                )
 
-⏱ Timeframe: {tf}
-📊 Signal: {signal}
-🎯 Strength: {strength}/100
+                if signal != "NO TRADE ⚪":
+                    send_signal(
+                        symbol,
+                        price,
+                        timeframe,
+                        signal,
+                        strength
+                    )
 
-🌍 Markets: Crypto + Forex + Gold
-"""
-            send(msg)
+                time.sleep(2)
 
-            time.sleep(2)
+        except Exception as e:
+            print(e)
 
-    # cycle delay (3 min system base)
-    time.sleep(180)
+    print("✅ Scan Complete")
+
+    time.sleep(SCAN_INTERVAL)
