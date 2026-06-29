@@ -1,24 +1,27 @@
-import random
+from market import get_klines
 
-def ict_smc_signal(price, tf):
+def generate_signal(symbol, timeframe="3m"):
 
-    # fake structure engine (upgrade to real candles later)
-    strength = random.randint(1, 100)
+    candles = get_klines(symbol, timeframe, 50)
 
-    if tf == "3m":
-        threshold = 65
-    elif tf == "15m":
-        threshold = 60
-    elif tf == "1h":
-        threshold = 55
-    else:
-        threshold = 50
+    if not candles or len(candles) < 20:
+        return None
 
-    if strength > threshold:
+    closes = [float(c[4]) for c in candles]
+
+    last = closes[-1]
+    avg20 = sum(closes[-20:]) / 20
+
+    if last > avg20:
         signal = "BUY 🟢"
-    elif strength < (100 - threshold):
+    elif last < avg20:
         signal = "SELL 🔴"
     else:
         signal = "NO TRADE ⚪"
 
-    return signal, strength
+    return {
+        "symbol": symbol,
+        "timeframe": timeframe,
+        "price": last,
+        "signal": signal,
+    }
