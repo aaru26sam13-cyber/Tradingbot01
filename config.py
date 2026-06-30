@@ -2,48 +2,36 @@
 # TELEGRAM SETTINGS
 # ===========================
 
-TOKEN = "8793772063:AAHgvP6G_Rdy3bnCKnFmfhMsxdNB-ApqY6U"
+TOKEN = "NEW_BOT_TOKEN"
 CHAT_ID = "7301534362"
 
 # ===========================
-# CRYPTO SYMBOLS
+# MARKET
 # ===========================
 
-CRYPTO_SYMBOLS = [
-    "BTCUSDT",
-    "ETHUSDT",
-    "BNBUSDT",
-    "SOLUSDT",
-    "XRPUSDT",
-    "DOGEUSDT",
-    "ADAUSDT",
-    "AVAXUSDT",
-    "LINKUSDT",
-    "DOTUSDT",
-    "TRXUSDT",
-    "LTCUSDT",
-    "BCHUSDT",
-    "ATOMUSDT",
-    "APTUSDT",
-    "ARBUSDT",
-    "SUIUSDT",
-    "PEPEUSDT",
-    "SHIBUSDT"
-]
+SYMBOL = "XAUUSD"
 
 # ===========================
-# TIMEFRAMES
+# TIMEFRAME
 # ===========================
 
-TIMEFRAMES = [
-    "3m",
-    "15m",
-    "1h",
-    "4h"
-]
+TIMEFRAME = "5m"
 
 # ===========================
 # SCAN SETTINGS
 # ===========================
 
 SCAN_INTERVAL = 180
+
+# ===========================
+# PAPER TRADING
+# ===========================
+
+PAPER_TRADING = True
+
+# ===========================
+# RISK MANAGEMENT
+# ===========================
+
+RISK_PER_TRADE = 1.0
+RR_RATIO = 2.0
