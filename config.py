@@ -4,7 +4,7 @@ TELEGRAM SETTINGS
 
 ===========================
 
-TOKEN = "8793772063:AAHgvP6G_Rdy3bnCKnFmfhMsxdNB-ApqY6U"
+TOKEN = "8793772063:AAES1j8j9raF4GWWcEpc2jzH9FOeYBUP8"
 CHAT_ID = "7301534362"
 
 ===========================
